@@ -1,119 +1,142 @@
-# 📘 Student Task Management System (Python GUI)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Task Manager</title>
 
-A modern **Student Task Manager** built using Python and Tkinter.
-This application helps students organize tasks, manage deadlines, and track progress efficiently with a clean and interactive GUI.
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
 
----
+  .container {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    width: 350px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
 
-## 🚀 Features
+  h2 {
+    text-align: center;
+    color: #333;
+  }
 
-* ➕ Add tasks with deadlines
-* ✔ Mark tasks as completed
-* ❌ Delete tasks
-* 🔍 Search tasks (optional feature)
-* 🏷 Priority tagging (High / Medium / Low)
-* 💾 Data stored using JSON (persistent storage)
-* 🎨 Modern dark-themed UI
-* ✨ Smooth animation effects
-* 📊 Task counter display
-* 📜 Scrollable task list
+  input {
+    width: 70%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
 
----
+  button {
+    padding: 8px 12px;
+    border: none;
+    background: #667eea;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+  }
 
-## 🛠 Tech Stack
+  button:hover {
+    background: #5a67d8;
+  }
 
-* **Language:** Python
-* **GUI Library:** Tkinter
-* **Storage:** JSON file
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+  }
 
----
+  li {
+    background: #f4f4f4;
+    padding: 10px;
+    margin-top: 8px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
 
-## 📂 Project Structure
+  .delete {
+    background: red;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 
-```
-📁 Student-Task-Manager
-│── main.py          # Main application file
-│── tasks.json       # Stores task data
-│── README.md        # Project documentation
-```
+  .completed {
+    text-decoration: line-through;
+    color: gray;
+  }
+</style>
+</head>
 
----
+<body>
 
-## ⚙️ Installation & Setup
+<div class="container">
+  <h2>📘 Task Manager</h2>
 
-### 1. Install Python
+  <input type="text" id="taskInput" placeholder="Enter task">
+  <button onclick="addTask()">Add</button>
 
-Make sure Python is installed (version 3.x)
+  <ul id="taskList"></ul>
+</div>
 
-### 2. Clone the repository
+<script>
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-```
-git clone https://github.com/your-username/student-task-manager.git
-cd student-task-manager
-```
+  function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
 
-### 3. Run the project
+  function displayTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
 
-```
-python main.py
-```
+    tasks.forEach((task, index) => {
+      let li = document.createElement("li");
 
----
+      li.innerHTML = `
+        <span onclick="toggleTask(${index})" class="${task.done ? 'completed' : ''}">
+          ${task.text}
+        </span>
+        <span class="delete" onclick="deleteTask(${index})">X</span>
+      `;
 
-## 🖥️ Usage
+      list.appendChild(li);
+    });
+  }
 
-1. Enter task name and deadline
-2. Click ➕ **Add** to add a task
-3. Select a task and click ✔ **Done** to mark complete
-4. Select a task and click ❌ **Delete** to remove
-5. Use search bar to find tasks (if added)
+  function addTask() {
+    let input = document.getElementById("taskInput");
+    if (input.value.trim() === "") return;
 
----
+    tasks.push({ text: input.value, done: false });
+    input.value = "";
 
-## 📸 Screenshots (Add Later)
+    saveTasks();
+    displayTasks();
+  }
 
-> Add screenshots of your UI here for better presentation
+  function deleteTask(index) {
+    tasks.splice(index, 1);
+    saveTasks();
+    displayTasks();
+  }
 
----
+  function toggleTask(index) {
+    tasks[index].done = !tasks[index].done;
+    saveTasks();
+    displayTasks();
+  }
 
-## 💡 Future Improvements
+  displayTasks();
+</script>
 
-* 🔐 Login system
-* ⏰ Deadline reminders / notifications
-* 🌐 Web version using Flask/Django
-* 🗄 Database integration (SQLite/MySQL)
-
----
-
-## 🎯 Learning Outcomes
-
-* GUI development using Tkinter
-* File handling with JSON
-* Event-driven programming
-* UI/UX design basics
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-Feel free to fork the repository and submit a pull request.
-
----
-
-## 📄 License
-
-This project is open-source and free to use.
-
----
-
-## 👩‍💻 Author
-
-**Tania Jasrotia**
-
-* 📧 Email: [taniadevijasrotia@gmail.com](mailto:taniadevijasrotia@gmail.com)
-* 🔗 LinkedIn: https://www.linkedin.com/in/tania-jasrotia-298a5236a
-
----
-
- 
+</body>
+</html>
