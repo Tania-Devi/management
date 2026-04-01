@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Task Manager</title>
 
 <style>
@@ -12,6 +13,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
+    margin: 0;
   }
 
   .container {
@@ -24,11 +26,16 @@
 
   h2 {
     text-align: center;
-    color: #333;
+    margin-bottom: 15px;
+  }
+
+  .input-box {
+    display: flex;
+    gap: 5px;
   }
 
   input {
-    width: 70%;
+    flex: 1;
     padding: 8px;
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -60,10 +67,12 @@
     border-radius: 8px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
 
   .delete {
     background: red;
+    color: white;
     padding: 5px 8px;
     border-radius: 5px;
     cursor: pointer;
@@ -81,60 +90,92 @@
 <div class="container">
   <h2>📘 Task Manager</h2>
 
-  <input type="text" id="taskInput" placeholder="Enter task">
-  <button onclick="addTask()">Add</button>
+  <div class="input-box">
+    <input type="text" id="taskInput" placeholder="Enter task">
+    <button id="addBtn">Add</button>
+  </div>
 
   <ul id="taskList"></ul>
 </div>
 
 <script>
-  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let tasks = [];
 
+  // Load tasks
+  function loadTasks() {
+    const data = localStorage.getItem("tasks");
+    if (data) {
+      tasks = JSON.parse(data);
+    }
+  }
+
+  // Save tasks
   function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }
 
+  // Display tasks
   function displayTasks() {
     const list = document.getElementById("taskList");
     list.innerHTML = "";
 
     tasks.forEach((task, index) => {
-      let li = document.createElement("li");
+      const li = document.createElement("li");
 
-      li.innerHTML = `
-        <span onclick="toggleTask(${index})" class="${task.done ? 'completed' : ''}">
-          ${task.text}
-        </span>
-        <span class="delete" onclick="deleteTask(${index})">X</span>
-      `;
+      const text = document.createElement("span");
+      text.innerText = task.text;
+
+      if (task.done) text.classList.add("completed");
+
+      text.onclick = () => toggleTask(index);
+
+      const del = document.createElement("span");
+      del.innerText = "X";
+      del.className = "delete";
+      del.onclick = () => deleteTask(index);
+
+      li.appendChild(text);
+      li.appendChild(del);
 
       list.appendChild(li);
     });
   }
 
-  function addTask() {
-    let input = document.getElementById("taskInput");
-    if (input.value.trim() === "") return;
+  // Add task
+  document.getElementById("addBtn").addEventListener("click", addTask);
 
-    tasks.push({ text: input.value, done: false });
+  function addTask() {
+    const input = document.getElementById("taskInput");
+    const value = input.value.trim();
+
+    if (value === "") {
+      alert("Enter a task!");
+      return;
+    }
+
+    tasks.push({ text: value, done: false });
     input.value = "";
 
     saveTasks();
     displayTasks();
   }
 
+  // Delete task
   function deleteTask(index) {
     tasks.splice(index, 1);
     saveTasks();
     displayTasks();
   }
 
+  // Toggle complete
   function toggleTask(index) {
     tasks[index].done = !tasks[index].done;
     saveTasks();
     displayTasks();
   }
 
+  // Initialize
+  loadTasks();
   displayTasks();
 </script>
 
