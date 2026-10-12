@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f7fb">
   <title>Taskflow — Student Task Manager</title>
+
   <style>
     :root {
       color-scheme: light;
@@ -18,7 +19,8 @@
       --accent-soft: #f0efff;
       --green: #138a63;
       --danger: #c73c4b;
-      --shadow: 0 18px 60px rgba(31, 41, 55, .09), 0 2px 8px rgba(31, 41, 55, .04);
+      --shadow: 0 18px 60px rgba(31, 41, 55, .09),
+                 0 2px 8px rgba(31, 41, 55, .04);
     }
 
     * { box-sizing: border-box; }
@@ -68,6 +70,7 @@
     }
 
     .intro { padding: 30px 34px 27px; }
+
     .eyebrow {
       margin: 0 0 7px;
       color: var(--accent);
@@ -364,8 +367,19 @@
         </div>
 
         <div class="progress-wrap">
-          <div class="progress-label"><span>Overall progress</span><span id="progressText">0%</span></div>
-          <div class="progress-track" role="progressbar" aria-label="Task completion progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack">
+          <div class="progress-label">
+            <span>Overall progress</span>
+            <span id="progressText">0%</span>
+          </div>
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="Task completion progress"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="progressTrack"
+          >
             <div class="progress-bar" id="progressBar"></div>
           </div>
         </div>
@@ -377,11 +391,20 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
           </svg>
-          <input id="taskInput" type="text" maxlength="200" placeholder="What do you need to get done?" autocomplete="off" aria-describedby="formHint">
+          <input
+            id="taskInput"
+            type="text"
+            maxlength="200"
+            placeholder="What do you need to get done?"
+            autocomplete="off"
+            aria-describedby="formHint"
+          >
         </div>
         <span class="sr-only" id="formHint">Press Enter or select Add task to add it to your list.</span>
         <button class="add-button" type="submit">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+          </svg>
           <span>Add task</span>
         </button>
       </form>
@@ -391,7 +414,9 @@
           <h2 id="listTitle">Your list</h2>
           <span id="listHint">Saved on this device</span>
         </div>
+
         <ul class="task-list" id="taskList" aria-labelledby="listTitle" aria-live="polite"></ul>
+
         <div class="empty" id="emptyState">
           <div class="empty-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
@@ -401,6 +426,7 @@
           <h3>Make room for a win</h3>
           <p>Add your first task to get started.</p>
         </div>
+
         <div class="footer">
           <span>Your tasks stay private on this device.</span>
           <span id="footerCount">0 tasks</span>
@@ -413,7 +439,7 @@
     (() => {
       'use strict';
 
-      const STORAGE_KEY = 'taskflow-student-tasks-v1';
+      const STORAGE_KEY = 'tasks';
       const form = document.getElementById('taskForm');
       const input = document.getElementById('taskInput');
       const list = document.getElementById('taskList');
@@ -433,18 +459,39 @@
 
       let tasks = readTasks();
 
+      function createId() {
+        return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+      }
+
       function readTasks() {
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
           if (!saved) return [];
+
           const parsed = JSON.parse(saved);
           if (!Array.isArray(parsed)) return [];
-          return parsed.filter(task =>
-            task &&
-            typeof task.id === 'string' &&
-            typeof task.text === 'string' &&
-            typeof task.completed === 'boolean'
-          );
+
+          return parsed.flatMap(task => {
+            if (typeof task === 'string' && task.trim()) {
+              return [{ id: createId(), text: task.trim(), completed: false }];
+            }
+
+            if (!task || typeof task !== 'object') return [];
+
+            const text = typeof task.text === 'string'
+              ? task.text
+              : typeof task.task === 'string'
+                ? task.task
+                : '';
+
+            if (!text.trim()) return [];
+
+            return [{
+              id: typeof task.id === 'string' ? task.id : createId(),
+              text: text.trim(),
+              completed: task.completed === true || task.done === true
+            }];
+          });
         } catch {
           return [];
         }
@@ -469,7 +516,10 @@
           const toggle = document.createElement('button');
           toggle.type = 'button';
           toggle.className = 'check';
-          toggle.setAttribute('aria-label', `${task.completed ? 'Mark incomplete' : 'Mark complete'}: ${task.text}`);
+          toggle.setAttribute(
+            'aria-label',
+            `${task.completed ? 'Mark incomplete' : 'Mark complete'}: ${task.text}`
+          );
           toggle.setAttribute('aria-pressed', String(task.completed));
           toggle.innerHTML = icons.check;
           toggle.addEventListener('click', () => toggleTask(task.id));
@@ -513,8 +563,11 @@
 
       function toggleTask(id) {
         tasks = tasks.map(task =>
-          task.id === id ? { ...task, completed: !task.completed } : task
+          task.id === id
+            ? { ...task, completed: !task.completed }
+            : task
         );
+
         saveTasks();
         render();
       }
@@ -535,14 +588,7 @@
           return;
         }
 
-        tasks.unshift({
-          id: crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          text,
-          completed: false
-        });
-
+        tasks.unshift({ id: createId(), text, completed: false });
         saveTasks();
         render();
         input.value = '';
